@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79f57bc2350a43d5911c192fb8136663, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  densityShader: {fileID: 7200000, guid: 52e05d6eb8c2013498e41900706ec208, type: 3}
 --- !u!23 &-5400376245770128850
 MeshRenderer:
   m_ObjectHideFlags: 0

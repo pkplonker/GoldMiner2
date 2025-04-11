@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f994d469a244bd691e9fc18ea05b46d, type: 3}
   m_Name: NoiseData
   m_EditorClassIdentifier: 
-  Scale: 0.02
+  Scale: 0.01
   Octaves: 8
   Persistence: 0.4
   Lacunarity: 2

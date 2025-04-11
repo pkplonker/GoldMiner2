@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Runtime.Terrain.Tables;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Runtime.Terrain
 {
@@ -10,7 +12,6 @@ namespace Runtime.Terrain
 		private float[,,] density;
 		private TerrainCubeData terrainData;
 		private Vector3Int chunkCoord;
-		private float baseHeight;
 
 		public void Generate(Vector3Int chunkCoord, TerrainCubeData terrainData)
 		{
@@ -22,10 +23,65 @@ namespace Runtime.Terrain
 				chunkCoord.y * terrainData.ChunkHeight,
 				chunkCoord.z * terrainData.ChunkDepth
 			);
-			baseHeight = terrainData.MaxTerrainHeightOffset;
-
-			GenerateDensity();
+			var timer = Stopwatch.StartNew();
+			//GenerateDensity();
+			GenerateDensityWithGPU();
+			Debug.Log($"Density generated in {timer.ElapsedMilliseconds}ms");
+			timer.Reset();
+			timer.Start();
 			GenerateMesh();
+			Debug.Log($"Mesh generated in {timer.ElapsedMilliseconds}ms");
+		}
+
+		[SerializeField]
+		ComputeShader densityShader;
+
+		ComputeBuffer densityBuffer;
+
+		private void GenerateDensityWithGPU()
+		{
+			int width = terrainData.ChunkWidth + 1;
+			int height = terrainData.ChunkHeight + 1;
+			int depth = terrainData.ChunkDepth + 1;
+			int total = width * height * depth;
+
+			densityBuffer = new ComputeBuffer(total, sizeof(float));
+			densityShader.SetBuffer(0, "DensityBuffer", densityBuffer);
+			densityShader.SetInts("size", width - 1, height - 1, depth - 1);
+			densityShader.SetFloat("isoLevel", terrainData.IsoLevel);
+			densityShader.SetFloat("baseHeight", terrainData.IsoLevel);
+			densityShader.SetFloat("bumpHeight", terrainData.SurfaceNoise.HeightMultiplier);
+			densityShader.SetFloat("noiseScale", terrainData.SurfaceNoise.Scale);
+			densityShader.SetFloat("noiseScale", terrainData.SurfaceNoise.Scale);
+			densityShader.SetInt("octaves", terrainData.SurfaceNoise.Octaves);
+			densityShader.SetFloat("persistence", terrainData.SurfaceNoise.Persistence);
+			densityShader.SetFloat("lacunarity", terrainData.SurfaceNoise.Lacunarity);
+			float chunkWorldOffsetY = chunkCoord.y * terrainData.ChunkHeight;
+			densityShader.SetFloat("chunkWorldOffsetY", chunkWorldOffsetY);
+			Vector2 chunkWorldOffset = new Vector2(
+				chunkCoord.x * terrainData.ChunkWidth,
+				chunkCoord.z * terrainData.ChunkDepth
+			);
+
+			densityShader.SetFloats("chunkWorldOffsetXZ", chunkWorldOffset.x, chunkWorldOffset.y);
+			int threadGroupsX = Mathf.CeilToInt(width / 8f);
+			int threadGroupsY = Mathf.CeilToInt(height / 8f);
+			int threadGroupsZ = Mathf.CeilToInt(depth / 8f);
+
+			densityShader.Dispatch(0, threadGroupsX, threadGroupsY, threadGroupsZ);
+
+			float[] densities = new float[total];
+			densityBuffer.GetData(densities);
+			densityBuffer.Release();
+
+			density = new float[width, height, depth];
+			for (int x = 0; x < width; x++)
+				for (int y = 0; y < height; y++)
+					for (int z = 0; z < depth; z++)
+					{
+						int index = x + y * width + z * width * height;
+						density[x, y, z] = densities[index];
+					}
 		}
 
 		private void GenerateDensity()
@@ -35,8 +91,8 @@ namespace Runtime.Terrain
 			int d = terrainData.ChunkDepth;
 
 			density = new float[w + 1, h + 1, d + 1];
-			var min = float.MaxValue;
-			var max = float.MinValue;
+			//var min = float.MaxValue;
+			//var max = float.MinValue;
 			for (int x = 0; x <= w; x++)
 				for (int y = 0; y <= h; y++)
 					for (int z = 0; z <= d; z++)
@@ -50,12 +106,12 @@ namespace Runtime.Terrain
 						float groundY = terrainData.IsoLevel + perlinOffset;
 						var densityValue = groundY - worldY;
 						density[x, y, z] = densityValue;
-						if (densityValue > max) max = densityValue;
-						if (densityValue < min) min = densityValue;
+						//if (densityValue > max) max = densityValue;
+						//if (densityValue < min) min = densityValue;
 					}
 
-			Debug.Log($"Min: {min} Max: {max}");
-			Debug.Log($"Iso: {terrainData.IsoLevel}");
+			//Debug.Log($"Min: {min} Max: {max}");
+			//Debug.Log($"Iso: {terrainData.IsoLevel}");
 		}
 
 		float GetFractalNoise(float x, float z, TerrainCubeData data)
