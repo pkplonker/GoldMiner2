@@ -42,18 +42,10 @@ namespace Runtime.Terrain
 		public void GenerateChunksAround(TerrainCubeData data, Vector3Int worldPosition, Vector3Int dimensions)
 		{
 			Vector3Int centerCoord = WorldToChunkCoordCentered(data, worldPosition);
-
-			// Offset the chunk grid so that the center chunk aligns with world Y = 0
-			Vector3Int offset = new Vector3Int(
-				Mathf.FloorToInt(dimensions.x / 2f),
-				Mathf.FloorToInt(dimensions.y / 2f),
-				Mathf.FloorToInt(dimensions.z / 2f)
-			);
-
 			Vector3Int startCoord = new Vector3Int(
-				centerCoord.x - offset.x,
-				centerCoord.y - offset.y + (dimensions.y % 2 == 0 ? 1 : 0),
-				centerCoord.z - offset.z
+				centerCoord.x - Mathf.FloorToInt(dimensions.x / 2f),
+				centerCoord.y - Mathf.FloorToInt(dimensions.y / 2f),
+				centerCoord.z - Mathf.FloorToInt(dimensions.z / 2f)
 			);
 
 			for (int x = 0; x < dimensions.x; x++)
@@ -85,18 +77,10 @@ namespace Runtime.Terrain
 
 		private Vector3Int WorldToChunkCoordCentered(TerrainCubeData data, Vector3 worldPosition)
 		{
-			Vector3 chunkHalfSize = new Vector3(
-				data.ChunkSize.x / 2f,
-				data.ChunkSize.y / 2f,
-				data.ChunkSize.z / 2f
-			);
-
-			Vector3 adjustedPos = worldPosition - chunkHalfSize;
-
 			return new Vector3Int(
-				Mathf.FloorToInt(adjustedPos.x / data.ChunkSize.x),
-				Mathf.FloorToInt(adjustedPos.y / data.ChunkSize.y),
-				Mathf.FloorToInt(adjustedPos.z / data.ChunkSize.z)
+				Mathf.FloorToInt(worldPosition.x / data.ChunkSize.x),
+				Mathf.FloorToInt(worldPosition.y / data.ChunkSize.y),
+				Mathf.FloorToInt(worldPosition.z / data.ChunkSize.z)
 			);
 		}
 	}

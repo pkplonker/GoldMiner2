@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: TerrainData
   m_EditorClassIdentifier: 
   ChunkSize: {x: 32, y: 32, z: 32}
+  MaxVerticalChunks: 6
   GroundBumpHeight: 4
-  IsoLevel: -25
+  IsoLevel: 0
   SurfaceNoiseScale: 0.1

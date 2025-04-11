@@ -10,6 +10,7 @@ namespace Runtime.Terrain
 		private float[,,] density;
 		private TerrainCubeData terrainData;
 		private Vector3Int chunkCoord;
+		private float baseHeight;
 
 		public void Generate(Vector3Int chunkCoord, TerrainCubeData terrainData)
 		{
@@ -17,20 +18,21 @@ namespace Runtime.Terrain
 			this.terrainData = terrainData;
 
 			transform.position = new Vector3(
-				chunkCoord.x * terrainData.Width,
-				chunkCoord.y * terrainData.Height,
-				chunkCoord.z * terrainData.Depth
+				chunkCoord.x * terrainData.ChunkWidth,
+				chunkCoord.y * terrainData.ChunkHeight,
+				chunkCoord.z * terrainData.ChunkDepth
 			);
-			
+			baseHeight = terrainData.MaxTerrainHeightOffset;
+
 			GenerateDensity();
 			GenerateMesh();
 		}
 
 		private void GenerateDensity()
 		{
-			int w = terrainData.Width;
-			int h = terrainData.Height;
-			int d = terrainData.Depth;
+			int w = terrainData.ChunkWidth;
+			int h = terrainData.ChunkHeight;
+			int d = terrainData.ChunkDepth;
 
 			density = new float[w + 1, h + 1, d + 1];
 			var min = float.MaxValue;
@@ -39,31 +41,31 @@ namespace Runtime.Terrain
 				for (int y = 0; y <= h; y++)
 					for (int z = 0; z <= d; z++)
 					{
-						float worldX = x + chunkCoord.x * terrainData.Width;
-						float worldZ = z + chunkCoord.z * terrainData.Depth;
-						float worldY = y + chunkCoord.y * terrainData.Height;
+						float worldX = x + chunkCoord.x * terrainData.ChunkWidth;
+						float worldZ = z + chunkCoord.z * terrainData.ChunkDepth;
+						float worldY = y + chunkCoord.y * terrainData.ChunkHeight;
 
-						float perlinOffset = (Mathf.PerlinNoise(worldX * terrainData.SurfaceNoiseScale, worldZ * terrainData.SurfaceNoiseScale) - 0.5f) * 2f * terrainData.GroundBumpHeight;
-						float groundY = 0f + perlinOffset;
-
-						density[x, y, z] = worldY - groundY;
-						if(worldY - groundY>max) max = worldY - groundY;
-						if(worldY - groundY<min) min = worldY - groundY;
+						float perlinOffset =
+							(Mathf.PerlinNoise(worldX * terrainData.SurfaceNoiseScale,
+								worldZ * terrainData.SurfaceNoiseScale) - 0.5f) * 2f * terrainData.GroundBumpHeight;
+						float groundY = baseHeight + perlinOffset;
+						var value = groundY - worldY;
+						density[x, y, z] = value;
+						if (value > max) max = value;
+						if (value < min) min = value;
 					}
+
 			Debug.Log($"Min: {min}\nMax: {max}");
 		}
-
-
-
 
 		private void GenerateMesh()
 		{
 			List<Vector3> vertices = new();
 			List<int> triangles = new();
 
-			int w = terrainData.Width;
-			int h = terrainData.Height;
-			int d = terrainData.Depth;
+			int w = terrainData.ChunkWidth;
+			int h = terrainData.ChunkHeight;
+			int d = terrainData.ChunkDepth;
 
 			for (int x = 0; x < w; x++)
 				for (int y = 0; y < h; y++)
@@ -96,7 +98,9 @@ namespace Runtime.Terrain
 								float d2 = cube[b0];
 
 								float t = Mathf.Clamp01((terrainData.IsoLevel - d1) / (d2 - d1));
-								edgeVertices[i] = Vector3.Lerp(p1, p2, t) + new Vector3(x, y, z) - new Vector3(terrainData.Width, terrainData.Height, terrainData.Depth) * 0.5f;
+								edgeVertices[i] = Vector3.Lerp(p1, p2, t) + new Vector3(x, y, z) -
+								                  new Vector3(terrainData.ChunkWidth, terrainData.ChunkHeight,
+									                  terrainData.ChunkDepth) * 0.5f;
 							}
 						}
 
@@ -112,8 +116,8 @@ namespace Runtime.Terrain
 
 							int baseIndex = vertices.Count - 3;
 							triangles.Add(baseIndex);
-							triangles.Add(baseIndex + 1);
 							triangles.Add(baseIndex + 2);
+							triangles.Add(baseIndex + 1);
 						}
 					}
 
