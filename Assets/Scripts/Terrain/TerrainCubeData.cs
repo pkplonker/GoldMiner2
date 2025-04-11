@@ -9,6 +9,8 @@ namespace Runtime.Terrain
 		public int Width => ChunkSize.x;
 		public int Height => ChunkSize.y;
 		public int Depth => ChunkSize.z;
+		public float GroundBumpHeight = 4f;
+
 		public float IsoLevel = 0f;
 		public float SurfaceNoiseScale = 0.1f;
 	}

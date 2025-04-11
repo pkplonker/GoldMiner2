@@ -43,10 +43,17 @@ namespace Runtime.Terrain
 		{
 			Vector3Int centerCoord = WorldToChunkCoordCentered(data, worldPosition);
 
+			// Offset the chunk grid so that the center chunk aligns with world Y = 0
 			Vector3Int offset = new Vector3Int(
 				Mathf.FloorToInt(dimensions.x / 2f),
 				Mathf.FloorToInt(dimensions.y / 2f),
 				Mathf.FloorToInt(dimensions.z / 2f)
+			);
+
+			Vector3Int startCoord = new Vector3Int(
+				centerCoord.x - offset.x,
+				centerCoord.y - offset.y + (dimensions.y % 2 == 0 ? 1 : 0),
+				centerCoord.z - offset.z
 			);
 
 			for (int x = 0; x < dimensions.x; x++)
@@ -54,10 +61,11 @@ namespace Runtime.Terrain
 					for (int z = 0; z < dimensions.z; z++)
 					{
 						Vector3Int chunkCoord = new Vector3Int(
-							centerCoord.x + x - offset.x,
-							centerCoord.y + y - offset.y,
-							centerCoord.z + z - offset.z
+							startCoord.x + x,
+							startCoord.y + y,
+							startCoord.z + z
 						);
+
 
 						if (!chunks.ContainsKey(chunkCoord))
 						{

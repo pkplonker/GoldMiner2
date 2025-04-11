@@ -33,21 +33,28 @@ namespace Runtime.Terrain
 			int d = terrainData.Depth;
 
 			density = new float[w + 1, h + 1, d + 1];
-
+			var min = float.MaxValue;
+			var max = float.MinValue;
 			for (int x = 0; x <= w; x++)
 				for (int y = 0; y <= h; y++)
 					for (int z = 0; z <= d; z++)
 					{
-						float worldX = x + transform.position.x;
-						float worldZ = z + transform.position.z;
-						float heightVal = Mathf.PerlinNoise(
-							worldX * terrainData.SurfaceNoiseScale,
-							worldZ * terrainData.SurfaceNoiseScale
-						) * h;
+						float worldX = x + chunkCoord.x * w;
+						float worldZ = z + chunkCoord.z * d;
+						float worldY = y + chunkCoord.y * terrainData.Height;
 
-						density[x, y, z] = y - heightVal;
+						float perlinOffset = (Mathf.PerlinNoise(worldX * terrainData.SurfaceNoiseScale, worldZ * terrainData.SurfaceNoiseScale) - 0.5f) * 2f * terrainData.GroundBumpHeight;
+						float groundY = 0f + perlinOffset;
+
+						density[x, y, z] = worldY - groundY;
+						if(worldY - groundY>max) max = worldY - groundY;
+						if(worldY - groundY<min) min = worldY - groundY;
 					}
+			Debug.Log($"Min: {min}\nMax: {max}");
 		}
+
+
+
 
 		private void GenerateMesh()
 		{
