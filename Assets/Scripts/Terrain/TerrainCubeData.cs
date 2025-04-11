@@ -13,12 +13,13 @@ namespace Runtime.Terrain
 		[Tooltip("Estimated vertical chunk count for terrain centering")]
 		public int MaxVerticalChunks = 6;
 
-		public float MaxTerrainHeightOffset => (MaxVerticalChunks * ChunkSize.y) / 2f;
+		[Tooltip("World-space Y position of the terrain surface center")]
+		public float MaxTerrainHeightOffset => (MaxVerticalChunks * ChunkSize.y + ChunkSize.y) / 2f;
 
-		public float GroundBumpHeight = 12f;
-
+		[Tooltip("Global isolevel used to generate surface at the terrain height")]
 		public float IsoLevel => MaxTerrainHeightOffset;
 
-		public float SurfaceNoiseScale = 0.1f;
+		[Tooltip("Controls noise-based surface generation")]
+		public NoiseSettings SurfaceNoise;
 	}
 }

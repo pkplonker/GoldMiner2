@@ -45,17 +45,38 @@ namespace Runtime.Terrain
 						float worldZ = z + chunkCoord.z * terrainData.ChunkDepth;
 						float worldY = y + chunkCoord.y * terrainData.ChunkHeight;
 
-						float perlinOffset =
-							(Mathf.PerlinNoise(worldX * terrainData.SurfaceNoiseScale,
-								worldZ * terrainData.SurfaceNoiseScale) - 0.5f) * 2f * terrainData.GroundBumpHeight;
-						float groundY = baseHeight + perlinOffset;
-						var value = groundY - worldY;
-						density[x, y, z] = value;
-						if (value > max) max = value;
-						if (value < min) min = value;
+						float perlinOffset = GetFractalNoise(worldX, worldZ, terrainData) - 0.5f;
+
+						float groundY = terrainData.IsoLevel + perlinOffset;
+						var densityValue = groundY - worldY;
+						density[x, y, z] = densityValue;
+						if (densityValue > max) max = densityValue;
+						if (densityValue < min) min = densityValue;
 					}
 
-			Debug.Log($"Min: {min}\nMax: {max}");
+			Debug.Log($"Min: {min} Max: {max}");
+			Debug.Log($"Iso: {terrainData.IsoLevel}");
+		}
+
+		float GetFractalNoise(float x, float z, TerrainCubeData data)
+		{
+			float amplitude = 1f;
+			float frequency = 1f;
+			float noiseHeight = 0f;
+
+			for (int i = 0; i < data.SurfaceNoise.Octaves; i++)
+			{
+				float sampleX = (x + data.SurfaceNoise.Offset.x) * data.SurfaceNoise.Scale * frequency;
+				float sampleZ = (z + data.SurfaceNoise.Offset.y) * data.SurfaceNoise.Scale * frequency;
+
+				float perlin = Mathf.PerlinNoise(sampleX, sampleZ);
+				noiseHeight += perlin * amplitude;
+
+				amplitude *= data.SurfaceNoise.Persistence;
+				frequency *= data.SurfaceNoise.Lacunarity;
+			}
+
+			return noiseHeight * data.SurfaceNoise.HeightMultiplier;
 		}
 
 		private void GenerateMesh()
