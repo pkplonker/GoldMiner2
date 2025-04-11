@@ -282,6 +282,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1954844657}
   - component: {fileID: 1954844660}
+  - component: {fileID: 1954844661}
   m_Layer: 0
   m_Name: Terrain
   m_TagString: Untagged
@@ -317,6 +318,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chunkPrefab: {fileID: 2684261428704001827, guid: 44cdbdb5df093b04aa1242bee7f9e190, type: 3}
+--- !u!114 &1954844661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954844655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68e56e8f99684b4b9773d2ee56876264, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gizmoColor: {r: 0, g: 1, b: 1, a: 1}
+  terrainData: {fileID: 11400000, guid: 2c3b71e12044c2b448fdd4caaaef9c5e, type: 2}
 --- !u!1 &2095222530
 GameObject:
   m_ObjectHideFlags: 0

@@ -66,10 +66,16 @@ namespace Runtime.Terrain
 							startCoord.z + z
 						);
 
+						Vector3 chunkPosition = new Vector3(
+							chunkCoord.x * data.ChunkSize.x,
+							chunkCoord.y * data.ChunkSize.y,
+							chunkCoord.z * data.ChunkSize.z
+						);
 
 						if (!chunks.ContainsKey(chunkCoord))
 						{
-							GameObject chunkGO = Instantiate(chunkPrefab, Vector3.zero, Quaternion.identity, transform);
+							GameObject chunkGO = Instantiate(chunkPrefab, chunkPosition, Quaternion.identity,
+								transform);
 							MarchingChunk chunk = chunkGO.GetComponent<MarchingChunk>();
 							chunk.Generate(chunkCoord, data);
 							chunks.Add(chunkCoord, chunk);

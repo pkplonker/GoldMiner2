@@ -17,11 +17,11 @@ namespace Runtime.Terrain
 			this.terrainData = terrainData;
 
 			transform.position = new Vector3(
-				chunkCoord.x * terrainData.Width + terrainData.Width / 2f,
-				chunkCoord.y * terrainData.Height + terrainData.Height / 2f,
-				chunkCoord.z * terrainData.Depth + terrainData.Depth / 2f
+				chunkCoord.x * terrainData.Width,
+				chunkCoord.y * terrainData.Height,
+				chunkCoord.z * terrainData.Depth
 			);
-
+			
 			GenerateDensity();
 			GenerateMesh();
 		}
@@ -39,8 +39,8 @@ namespace Runtime.Terrain
 				for (int y = 0; y <= h; y++)
 					for (int z = 0; z <= d; z++)
 					{
-						float worldX = x + chunkCoord.x * w;
-						float worldZ = z + chunkCoord.z * d;
+						float worldX = x + chunkCoord.x * terrainData.Width;
+						float worldZ = z + chunkCoord.z * terrainData.Depth;
 						float worldY = y + chunkCoord.y * terrainData.Height;
 
 						float perlinOffset = (Mathf.PerlinNoise(worldX * terrainData.SurfaceNoiseScale, worldZ * terrainData.SurfaceNoiseScale) - 0.5f) * 2f * terrainData.GroundBumpHeight;
@@ -96,7 +96,7 @@ namespace Runtime.Terrain
 								float d2 = cube[b0];
 
 								float t = Mathf.Clamp01((terrainData.IsoLevel - d1) / (d2 - d1));
-								edgeVertices[i] = Vector3.Lerp(p1, p2, t) + new Vector3(x, y, z);
+								edgeVertices[i] = Vector3.Lerp(p1, p2, t) + new Vector3(x, y, z) - new Vector3(terrainData.Width, terrainData.Height, terrainData.Depth) * 0.5f;
 							}
 						}
 
